@@ -1,0 +1,85 @@
+.media {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 260px;
+  padding: 15px;
+  margin: 15px;
+  background-color: #34495e;
+  border-radius: 15px;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease-in-out;
+  font-family: "Montserrat", sans-serif;
+  color: #ecf0f1;
+  position: relative; /* Make media container relative for absolute positioning */
+}
+
+.media:hover {
+  background-color: #ecf0f1;
+  color: #34495e;
+  transform: scale(1.05);
+  box-shadow: 0px 12px 25px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 550px) {
+  .media {
+    width: 100%;
+  }
+}
+
+.poster {
+  border-radius: 10px;
+  width: 100%;
+  height: auto;
+  transition: transform 0.3s ease;
+}
+
+.media:hover .poster {
+  transform: scale(1.02);
+}
+
+.title {
+  width: 100%;
+  text-align: center;
+  font-size: 20px;
+  padding: 12px 0;
+  font-weight: bold;
+  color: #e67e22;
+}
+
+.date-media {
+  display: flex;
+  justify-content: space-between; /* Ensure spacing between media type and date */
+  width: 100%; /* Full width for better spacing */
+  padding: 10px 0;
+  color: #bdc3c7;
+  flex-wrap: wrap; /* Prevent overflow by wrapping content */
+}
+
+.subTitle {
+  font-size: 15px;
+  margin-left: 5px;
+  white-space: nowrap; /* Prevents text from breaking into multiple lines */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Add ellipsis if content overflows */
+}
+
+.badge {
+  position: absolute; /* Make the badge absolute */
+  top: 10px; /* Adjust vertical position */
+  right: 10px; /* Adjust horizontal position */
+  z-index: 10; /* Ensure it appears above other content */
+}
+
+.vote_average {
+  background-color: #27ae60;
+  color: white;
+  border-radius: 5px;
+  padding: 2px 5px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.media:hover .title {
+  color: #2980b9;
+}

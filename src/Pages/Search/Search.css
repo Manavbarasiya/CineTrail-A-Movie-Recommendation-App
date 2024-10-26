@@ -1,0 +1,23 @@
+.aligning {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .searches {
+    display: flex;
+    margin: 15px 0;
+  }
+  
+  .searchBox {
+    flex: 1;
+  }
+  
+  .MuiButton-contained {
+    height: 56px; /* Match the TextField height */
+  }
+  
+  .MuiTabs-root {
+    width: 100%; /* Ensure Tabs take full width */
+  }
+  
