@@ -1,12 +1,22 @@
-import { Button, Tab, Tabs, TextField } from "@mui/material";
-import { useState } from "react";
+import {
+  Button,
+  Tab,
+  Tabs,
+  TextField,
+  Grid,
+  Box,
+  Container,
+  Typography,
+} from "@mui/material";
+import { useState, useEffect } from "react";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
 import { React_APP_API_KEY } from "../../config/config";
 import SingleContent from "../../components/Header/SingleContent/SingleContent";
 import CustomPagination from "../../components/Pagination/CustomPagination";
-import Shimmer from "../../components/Shimmer"; // Assuming you have a Shimmer component
-import "./Search.css"
+import Shimmer from "../../components/Shimmer";
+import "./Search.css";
+
 const theme = createTheme({
   palette: {
     mode: "dark",
@@ -23,7 +33,15 @@ const Search = () => {
   const [content, setContent] = useState([]);
   const [numOfPages, setNumOfPages] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [searchInitiated, setSearchInitiated] = useState(false); // New state for search initiation
+  const [searchInitiated, setSearchInitiated] = useState(false);
+
+  const moodToMovie = {
+    happy: ["The Princess Bride", "La La Land", "Singin' in the Rain", "Clueless", "Mean Girls"],
+    sad: ["Schindler's List", "The Pursuit of Happyness", "Requiem for a Dream", "Atonement"],
+    romantic: ["Titanic", "The Notebook", "Pride & Prejudice", "La La Land"],
+    thriller: ["Inception", "Shutter Island", "Se7en", "Fight Club", "Gone Girl"],
+    action: ["Mad Max: Fury Road", "The Dark Knight", "Gladiator", "John Wick", "Die Hard"]
+  };
 
   const handleChange = (event, newValue) => {
     setType(newValue);
@@ -40,110 +58,132 @@ const Search = () => {
   };
 
   const fetchData = async () => {
-    console.log("fetchData triggered");
+    setLoading(true);
+    setSearchInitiated(true);
+
     if (searchText) {
-      setLoading(true);
-      setSearchInitiated(true); // Set search initiated to true when fetching data
-      const apiUrl =
-        type === 0
-          ? `https://api.themoviedb.org/3/search/movie?api_key=${React_APP_API_KEY}&query=${searchText}&page=${page}`
-          : `https://api.themoviedb.org/3/search/tv?api_key=${React_APP_API_KEY}&query=${searchText}&page=${page}`;
+      let movieSuggestions = [];
 
-      try {
-        const response = await fetch(apiUrl, options);
-        const data = await response.json();
-        console.log("herein search");
-        console.log(data.results);
+      Object.keys(moodToMovie).forEach((mood) => {
+        if (searchText.toLowerCase().includes(mood)) {
+          movieSuggestions = moodToMovie[mood];
+        }
+      });
 
-        setContent(data.results);
-        setNumOfPages(data.total_pages);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
+      if (movieSuggestions.length > 0) {
+        setContent(movieSuggestions.map((title, index) => ({
+          id: index,
+          original_title: title,
+          name: title,
+          vote_average: 8,
+          release_date: "N/A",
+          first_air_date: "N/A",
+          poster_path: null,
+        })));
+        setNumOfPages(1);
+      } else {
+        const apiUrl =
+          type === 0
+            ? `https://api.themoviedb.org/3/search/movie?api_key=${React_APP_API_KEY}&query=${searchText}&page=${page}`
+            : `https://api.themoviedb.org/3/search/tv?api_key=${React_APP_API_KEY}&query=${searchText}&page=${page}`;
+
+        try {
+          const response = await fetch(apiUrl, options);
+          const data = await response.json();
+          setContent(data.results);
+          setNumOfPages(data.total_pages);
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
       }
     }
+
+    setLoading(false);
   };
+
+  useEffect(() => {
+    if (searchText) {
+      fetchData();
+    }
+    // eslint-disable-next-line
+  }, [type, page]);
 
   return (
     <ThemeProvider theme={theme}>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-          margin: "15px 0",
-        }}
-      >
-        <div className="aligning" style={{ width: "100%" }}>
-          <div
-            className="searches"
-            style={{ display: "flex", margin: "15px 0" }}
-          >
+      <Container maxWidth="md">
+        <Box mt={4} mb={2}>
+          <Typography variant="h4" align="center" gutterBottom>
+            Search Movies or TV Shows
+          </Typography>
+          <Box display="flex" gap={2} mt={2}>
             <TextField
-              style={{ flex: 1 }}
-              className="searchBox"
+              fullWidth
               label="Search"
-              onChange={(e) => setSearchText(e.target.value)}
               variant="filled"
-              InputProps={{
-                style: { color: "#ffffff" },
-              }}
-              InputLabelProps={{
-                style: { color: "#ffffff" },
-              }}
+              onChange={(e) => setSearchText(e.target.value)}
+              InputProps={{ style: { color: "#fff" } }}
+              InputLabelProps={{ style: { color: "#fff" } }}
             />
             <Button
               variant="contained"
-              style={{ marginLeft: 10, height: "56px" }} // Match height with TextField
+              color="primary"
               onClick={fetchData}
+              sx={{ height: "56px", minWidth: "56px" }}
             >
               <SearchIcon />
             </Button>
-          </div>
-
+          </Box>
           <Tabs
             value={type}
             onChange={handleChange}
             indicatorColor="primary"
             textColor="primary"
-            style={{ marginTop: 10, width: "100%" }} // Ensure full width
+            centered
+            sx={{ marginTop: 3 }}
           >
-            <Tab
-              style={{ flex: 1, textAlign: "center", minWidth: "0" }}
-              label="Search Movies"
-            />
-            <Tab
-              style={{ flex: 1, textAlign: "center", minWidth: "0" }}
-              label="Search TV Series"
-            />
+            <Tab label="Movies" />
+            <Tab label="TV Series" />
           </Tabs>
-        </div>
+        </Box>
 
         {loading ? (
           <Shimmer />
         ) : (
-          <div className="trending">
-            {content.map((c) => (
-              <SingleContent
-                key={c.id}
-                id={c.id}
-                poster={c.poster_path}
-                title={type === 0 ? c.original_title : c.name} // Check for movie or TV show title
-                date={type === 0 ? c.release_date : c.first_air_date} // Check for movie or TV show date
-                media_type={type === 0 ? "movie" : "tv"} // Set media_type based on type
-                vote_average={c.vote_average}
-              />
-            ))}
-            {searchInitiated &&
-              searchText &&
-              content.length === 0 &&
-              (type ? <h2>No series found</h2> : <h2>No Movies found</h2>)}
-          </div>
+          <>
+            <Grid container spacing={2} justifyContent="center">
+              {content.map((c, index) => (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <SingleContent
+                    id={c.id}
+                    poster={c.poster_path}
+                    title={type === 0 ? c.original_title : c.name}
+                    date={type === 0 ? c.release_date : c.first_air_date}
+                    media_type={type === 0 ? "movie" : "tv"}
+                    vote_average={c.vote_average}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+
+            {searchInitiated && searchText && content.length === 0 && (
+              <Typography
+                variant="h6"
+                color="textSecondary"
+                align="center"
+                sx={{ mt: 4 }}
+              >
+                {type ? "No series found." : "No movies found."}
+              </Typography>
+            )}
+          </>
         )}
 
-        <CustomPagination setPage={setPage} numOfPages={numOfPages} />
-      </div>
+        {numOfPages > 1 && (
+          <Box mt={4}>
+            <CustomPagination setPage={setPage} numOfPages={numOfPages} />
+          </Box>
+        )}
+      </Container>
     </ThemeProvider>
   );
 };
